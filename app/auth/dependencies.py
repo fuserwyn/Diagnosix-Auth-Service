@@ -1,13 +1,13 @@
-from fastapi import Depends, HTTPException, Request
+from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.db import get_db
 from app.services.auth import AuthService
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
 
 from app.db import async_session_maker
+
 
 async def get_db():
     async with async_session_maker() as session:

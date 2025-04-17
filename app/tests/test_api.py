@@ -1,8 +1,12 @@
-# tests/test_api.py
 import pytest
 from httpx import AsyncClient
+from app.db import async_session_maker
+from sqlalchemy import text
+import pytest_asyncio
+
 
 API_BASE = "http://localhost:8000"
+
 
 @pytest.mark.asyncio
 async def test_register():
@@ -37,7 +41,7 @@ async def test_login():
 
 
 @pytest.mark.asyncio
-async def test_me():
+async def test_me(clear_users_after_test):
     async with AsyncClient(base_url=API_BASE) as client:
         await client.post(f"{API_BASE}/register", json={
             "email": "user3@example.com",
