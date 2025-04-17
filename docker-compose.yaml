@@ -27,7 +27,7 @@ services:
       - ${ENV_FILE:-.env}
     environment:
       - PYTHONUNBUFFERED=1
-      - DATABASE_URL=postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+      - DATABASE_URL=postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@${HOST}:${DB_PORT}/${DB_NAME}
       - PORT=${PORT}
 
 volumes:
