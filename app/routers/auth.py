@@ -4,7 +4,7 @@ from app.schemas.user import UserCreate, UserLogin, UserOut
 from app.schemas.token import Token
 from app.auth.dependencies import get_db, get_current_user, role_required
 from app.services.user import UserService
-from app.constants.roles import UserRole
+from app.utils.constants.roles import UserRole
 
 router = APIRouter()
 

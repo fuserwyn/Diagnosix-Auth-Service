@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, field_validator
 from uuid import UUID
-from app.constants.roles import UserRole
+from app.utils.constants.roles import UserRole
 import re
 
 
@@ -20,6 +20,15 @@ class UserCreate(BaseModel):
         if not re.search(r"\d", v):
             raise ValueError("Password must include at least one digit")
         return v
+
+    @field_validator("role", mode="before")
+    @classmethod
+    def validate_role(cls, value):
+        try:
+            return UserRole(value)
+        except ValueError:
+            allowed = [role.value for role in UserRole]
+            raise ValueError(f"Invalid role: '{value}'. Must be one of: {allowed}")
 
 
 class UserLogin(BaseModel):

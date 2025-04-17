@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.services.auth import AuthService
 from app.models.user import User
 from app.db import async_session_maker
-from app.constants.roles import UserRole
+from app.utils.constants.roles import UserRole
 from typing import Union
 
 bearer_scheme = HTTPBearer(auto_error=False)
