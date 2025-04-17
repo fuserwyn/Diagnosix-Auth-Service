@@ -26,7 +26,7 @@ test:
 install-dev:
 	pip install -r requirements.txt
 	pip install -r requirements-dev.txt
-	pre-commit install
+	pip install pre-commit
 
 lint:
 	pre-commit run --all-files
