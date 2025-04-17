@@ -2,22 +2,25 @@ services:
   db:
     image: postgres:13-alpine
     restart: always
+    container_name: postgres_db
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   web:
     build: .
+    container_name: fastapi_app
     command: uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --reload
     ports:
       - "${PORT:-8000}:${PORT:-8000}"
     volumes:
       - .:/app
+      - ./alembic.ini:/app/alembic.ini  # Явно монтируем alembic.ini
     depends_on:
       - db
     env_file:

@@ -1,8 +1,7 @@
 import pytest
+
 from httpx import AsyncClient
-from app.db import async_session_maker
-from sqlalchemy import text
-import pytest_asyncio
+from fastapi import status
 
 
 API_BASE = "http://localhost:8000"
@@ -16,7 +15,7 @@ async def test_register():
             "password": "123456",
             "role": "doctor"
         })
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert data["email"] == "user1@example.com"
         assert data["role"] == "doctor"
@@ -34,7 +33,7 @@ async def test_login():
             "email": "user2@example.com",
             "password": "123456"
         })
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert "access_token" in data
         assert data["token_type"] == "bearer"
@@ -55,7 +54,7 @@ async def test_me(clear_users_after_test):
         token = login.json()["access_token"]
 
         response = await client.get(f"{API_BASE}/me", headers={"Authorization": f"Bearer {token}"})
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert data["email"] == "user3@example.com"
         assert data["role"] == "admin"

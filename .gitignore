@@ -4,8 +4,6 @@ __pycache__/
 *.env
 venv/
 
-# Alembic
-alembic/versions/
 
 # Pytest
 .cache/
