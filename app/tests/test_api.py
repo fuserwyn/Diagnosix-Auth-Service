@@ -1,20 +1,18 @@
+from collections.abc import Awaitable
+
 import pytest
-
-from httpx import AsyncClient
 from fastapi import status
-
+from httpx import AsyncClient
 
 API_BASE = "http://localhost:8000"
 
 
 @pytest.mark.asyncio
-async def test_register():
+async def test_register() -> None:
     async with AsyncClient(base_url=API_BASE) as client:
-        response = await client.post(f"{API_BASE}/register", json={
-            "email": "user1@example.com",
-            "password": "123456ppp",
-            "role": "doctor"
-        })
+        response = await client.post(
+            f"{API_BASE}/register", json={"email": "user1@example.com", "password": "123456ppp", "role": "doctor"}
+        )
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert data["email"] == "user1@example.com"
@@ -22,17 +20,12 @@ async def test_register():
 
 
 @pytest.mark.asyncio
-async def test_login():
+async def test_login() -> None:
     async with AsyncClient(base_url=API_BASE) as client:
-        await client.post(f"{API_BASE}/register", json={
-            "email": "user2@example.com",
-            "password": "123456ppp",
-            "role": "patient"
-        })
-        response = await client.post(f"{API_BASE}/login", json={
-            "email": "user2@example.com",
-            "password": "123456ppp"
-        })
+        await client.post(
+            f"{API_BASE}/register", json={"email": "user2@example.com", "password": "123456ppp", "role": "patient"}
+        )
+        response = await client.post(f"{API_BASE}/login", json={"email": "user2@example.com", "password": "123456ppp"})
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert "access_token" in data
@@ -40,17 +33,12 @@ async def test_login():
 
 
 @pytest.mark.asyncio
-async def test_me():
+async def test_me() -> None:
     async with AsyncClient(base_url=API_BASE) as client:
-        await client.post(f"{API_BASE}/register", json={
-            "email": "user3@example.com",
-            "password": "123456ppp",
-            "role": "admin"
-        })
-        login = await client.post(f"{API_BASE}/login", json={
-            "email": "user3@example.com",
-            "password": "123456ppp"
-        })
+        await client.post(
+            f"{API_BASE}/register", json={"email": "user3@example.com", "password": "123456ppp", "role": "admin"}
+        )
+        login = await client.post(f"{API_BASE}/login", json={"email": "user3@example.com", "password": "123456ppp"})
         token = login.json()["access_token"]
 
         response = await client.get(f"{API_BASE}/me", headers={"Authorization": f"Bearer {token}"})
@@ -61,41 +49,26 @@ async def test_me():
 
 
 @pytest.mark.asyncio
-async def test_admin_access_granted():
+async def test_admin_access_granted() -> None:
     async with AsyncClient(base_url=API_BASE) as client:
-        await client.post("/register", json={
-            "email": "admin1@example.com",
-            "password": "adminpass111",
-            "role": "admin"
-        })
-        login = await client.post("/login", json={
-            "email": "admin1@example.com",
-            "password": "adminpass111"
-        })
+        await client.post(
+            "/register", json={"email": "admin1@example.com", "password": "adminpass111", "role": "admin"}
+        )
+        login = await client.post("/login", json={"email": "admin1@example.com", "password": "adminpass111"})
         token = login.json()["access_token"]
 
-        response = await client.get("/dashboard", headers={
-            "Authorization": f"Bearer {token}"
-        })
+        response = await client.get("/dashboard", headers={"Authorization": f"Bearer {token}"})
         assert response.status_code == status.HTTP_200_OK
         assert "Welcome, admin" in response.json()["message"]
 
 
 @pytest.mark.asyncio
-async def test_doctor_access_denied(clear_users_after_test):
+@pytest.mark.asyncio
+async def test_doctor_access_denied(clear_users_after_test: Awaitable[None]) -> None:
     async with AsyncClient(base_url=API_BASE) as client:
-        await client.post("/register", json={
-            "email": "doc@example.com",
-            "password": "docpass111",
-            "role": "doctor"
-        })
-        login = await client.post("/login", json={
-            "email": "doc@example.com",
-            "password": "docpass111"
-        })
+        await client.post("/register", json={"email": "doc@example.com", "password": "docpass111", "role": "doctor"})
+        login = await client.post("/login", json={"email": "doc@example.com", "password": "docpass111"})
         token = login.json()["access_token"]
 
-        response = await client.get("/dashboard", headers={
-            "Authorization": f"Bearer {token}"
-        })
+        response = await client.get("/dashboard", headers={"Authorization": f"Bearer {token}"})
         assert response.status_code == status.HTTP_403_FORBIDDEN

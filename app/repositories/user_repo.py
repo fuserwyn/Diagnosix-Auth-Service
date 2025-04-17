@@ -1,10 +1,12 @@
 from typing import Optional
+
+from passlib.hash import bcrypt
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+
 from app.models.user import User
-from app.schemas.user import UserCreate
-from passlib.hash import bcrypt
 from app.repositories.base import BaseRepo
+from app.schemas.user import UserCreate
 
 
 class UserRepo(BaseRepo[User]):

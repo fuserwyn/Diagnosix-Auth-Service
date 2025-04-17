@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 from typing import Any, Union
-from jose import jwt, JWTError
+
+from jose import JWTError, jwt
+
 from app.core.config import settings
 
 

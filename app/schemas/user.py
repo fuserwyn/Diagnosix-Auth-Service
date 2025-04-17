@@ -1,7 +1,10 @@
-from pydantic import BaseModel, EmailStr, field_validator
-from uuid import UUID
-from app.utils.constants.roles import UserRole
 import re
+from typing import Any
+from uuid import UUID
+
+from pydantic import BaseModel, EmailStr, field_validator
+
+from app.utils.constants.roles import UserRole
 
 
 class UserCreate(BaseModel):
@@ -23,7 +26,7 @@ class UserCreate(BaseModel):
 
     @field_validator("role", mode="before")
     @classmethod
-    def validate_role(cls, value):
+    def validate_role(cls, value: Any) -> UserRole:
         try:
             return UserRole(value)
         except ValueError:

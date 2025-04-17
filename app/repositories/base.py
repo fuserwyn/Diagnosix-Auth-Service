@@ -1,11 +1,11 @@
-from typing import Generic, TypeVar, Type, Optional, Any, Union, Sequence
+from typing import Any, Generic, Optional, Sequence, Type, TypeVar, Union
 
 from sqlalchemy import Row, RowMapping
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import DeclarativeMeta
 
-
-ModelType = TypeVar("ModelType")
+ModelType = TypeVar("ModelType", bound=DeclarativeMeta)
 
 
 class BaseRepo(Generic[ModelType]):

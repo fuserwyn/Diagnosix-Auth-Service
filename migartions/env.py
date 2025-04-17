@@ -1,11 +1,12 @@
-from logging.config import fileConfig
-from app.core.config import settings
 import asyncio
+from logging.config import fileConfig
 
-from app.db import Base
 from alembic import context
-from app.models import User # noqa
 from sqlalchemy.ext.asyncio import create_async_engine
+
+from app.core.config import settings
+from app.database.db import Base
+from app.models import User  # noqa
 
 config = context.config
 if config.config_file_name is not None:
