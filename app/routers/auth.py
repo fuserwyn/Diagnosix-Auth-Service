@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user, get_db, role_required
@@ -14,15 +14,20 @@ router = APIRouter()
     "/register",
     response_model=UserOut,
     summary="Регистрация нового пользователя",
-    description="""
-Создаёт нового пользователя в системе.
+    description="""Создаёт нового пользователя в системе.
 
-- Требуется email, пароль и роль (`patient`, `doctor`, `admin`)
-- Пароль должен содержать хотя бы одну букву и цифру, от 6 до 32 символов
+- Требуется email, пароль и роль (patient, doctor, admin)
+- Возвращает зарегистрированного пользователя
 """,
+    responses={
+        status.HTTP_400_BAD_REQUEST: {"description": "Email уже зарегистрирован"},
+        status.HTTP_422_UNPROCESSABLE_ENTITY: {
+            "description": "Ошибка валидации (например, плохой пароль или неизвестная роль)"
+        },
+    },
     tags=["Аутентификация"],
 )
-async def register(user: UserCreate, db: AsyncSession = Depends(get_db)) -> UserOut:  # noqa: B008
+async def register(user: UserCreate, db: AsyncSession = Depends(get_db)) -> UserOut:  # noqa  B008
     return await UserService.register_user(user, db)
 
 
@@ -30,33 +35,43 @@ async def register(user: UserCreate, db: AsyncSession = Depends(get_db)) -> User
     "/login",
     response_model=Token,
     summary="Аутентификация пользователя",
-    description="""
-Проверяет email и пароль, и возвращает JWT access/refresh токены.
+    description="""Проверяет email и пароль, возвращает JWT токены (access и refresh).
 
-- Используется bcrypt для хеширования пароля
-- Access-токен имеет ограниченное время жизни
+- Использует bcrypt для проверки пароля
+- Если данные неверны — возвращает 401
 """,
+    responses={
+        status.HTTP_401_UNAUTHORIZED: {"description": "Неверные учётные данные"},
+        status.HTTP_422_UNPROCESSABLE_ENTITY: {"description": "Ошибка валидации"},
+    },
     tags=["Аутентификация"],
 )
-async def login(user: UserLogin, db: AsyncSession = Depends(get_db)) -> Token:  # noqa: B008
+async def login(user: UserLogin, db: AsyncSession = Depends(get_db)) -> Token:  # noqa  B008
     return await UserService.authenticate_user(user, db)
 
 
 @router.get(
     "/me",
     response_model=UserOut,
-    summary="Получить текущего пользователя",
-    description="Возвращает информацию о пользователе, извлечённом из JWT access токена.",
+    summary="Текущий пользователь",
+    description="Возвращает информацию о текущем пользователе по JWT токену.",
+    responses={
+        status.HTTP_403_FORBIDDEN: {"description": "Отсутствует или недействительный токен"},
+    },
     tags=["Пользователь"],
 )
-async def me(current_user: UserOut = Depends(get_current_user)) -> UserOut:  # noqa: B008
+async def me(current_user: UserOut = Depends(get_current_user)) -> UserOut:  # noqa  B008
     return current_user
 
 
 @router.get(
     "/dashboard",
     summary="Панель администратора",
-    description="Доступ разрешён только пользователям с ролью `admin`.",
+    description="Только для пользователей с ролью 'admin'.",
+    responses={
+        status.HTTP_403_FORBIDDEN: {"description": "Доступ запрещён: роль недостаточна"},
+        status.HTTP_401_UNAUTHORIZED: {"description": "Отсутствует авторизация"},
+    },
     tags=["Админ"],
     dependencies=[Depends(role_required([UserRole.ADMIN.value]))],
 )
