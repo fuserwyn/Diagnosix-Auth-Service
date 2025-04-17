@@ -10,26 +10,23 @@ run:
 	ENV_FILE=$(ENV_FILE) docker-compose up -d --build
 	docker-compose exec web bash
 
-migrate:
-	docker-compose exec web alembic upgrade head
-
-makemigrations:
-	docker-compose exec web alembic revision --autogenerate -m "$(name)"
-
 rebuild:
 	docker-compose down --volumes --remove-orphans
 	ENV_FILE=$(ENV_FILE) docker-compose up -d --build
 
+migrations:
+	alembic revision --autogenerate
+
+migrate:
+	alembic upgrade head
+
 test:
-	@WEB_NAME=$$(docker ps --format '{{.Names}}' | grep web-1); \
-	DB_NAME=$$(docker ps --format '{{.Names}}' | grep db-1); \
-	if [ -z "$$DB_NAME" ]; then echo "Postgres container not found!"; exit 1; fi; \
-	if [ -z "$$WEB_NAME" ]; then echo "Web container not found!"; exit 1; fi; \
-	echo "Dropping + creating user and DB in $$DB_NAME..."; \
-	docker exec -i $$DB_NAME psql -U postgres -c "DROP USER IF EXISTS app_db_user; CREATE USER app_db_user WITH PASSWORD 'SECRET_PASS'; ALTER ROLE app_db_user WITH CREATEDB;"; \
-	docker exec -i $$DB_NAME psql -U app_db_user -c "DROP DATABASE IF EXISTS app_db_user; CREATE DATABASE app_db_user; GRANT ALL PRIVILEGES ON DATABASE app_db_user TO app_db_user;"; \
-	echo "🚀 Running tests in $$WEB_NAME..."; \
-	docker exec -it $$WEB_NAME pytest -s
+	DB_NAME=$(shell grep TEST_DB_NAME .env | cut -d '=' -f2); \
+	DB_USER=$(shell grep TEST_DB_USER .env | cut -d '=' -f2); \
+	env $$(grep ^TEST_ .env | sed 's/^TEST_//') docker-compose exec db psql -U $$DB_USER -tc "SELECT 1 FROM pg_database WHERE datname='$$DB_NAME'" | grep -q 1 || \
+	env $$(grep ^TEST_ .env | sed 's/^TEST_//') docker-compose exec db psql -U $$DB_USER -c "CREATE DATABASE $$DB_NAME;"; \
+	env $$(grep ^TEST_ .env | sed 's/^TEST_//') docker-compose exec db psql -U $$DB_USER -d $$DB_NAME -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL PRIVILEGES ON SCHEMA public TO $$DB_USER;"
+	env $$(grep ^TEST_ .env | sed 's/^TEST_//') docker-compose exec web pytest -s -v
 
 
 
