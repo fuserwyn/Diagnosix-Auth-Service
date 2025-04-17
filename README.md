@@ -41,6 +41,7 @@ git clone git@github.com:fuserwyn/Diagnosix-Auth-Service.git
 cd Diagnosix-Auth-Service
 cp .env.example .env
 make up
+make migrate
 ```
 
 После запуска сервис доступен по адресу: [http://localhost:8000/docs](http://localhost:8000/docs)
