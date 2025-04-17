@@ -25,7 +25,7 @@ class Settings(BaseSettings):
             f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}" f"@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
         )
 
-    model_config = ConfigDict(env_file=".env", case_sensitive=True, extra="allow")
+    model_config = ConfigDict(env_file=".env.example", case_sensitive=True, extra="allow")
 
 
 settings = Settings()

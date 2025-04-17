@@ -37,9 +37,10 @@ test:
 	DB_USER=$$(grep TEST_DB_USER .env | cut -d '=' -f2); \
 	env $$(grep ^TEST_ .env | sed 's/^TEST_//') docker-compose exec db psql -U $$DB_USER -c "DROP DATABASE IF EXISTS $$DB_NAME;"
 
+install-dev:
+	pip install -r requirements.txt
+	pip install -r requirements-dev.txt
+	pre-commit install
+
 lint:
-	@echo "🧼 Running linters in Docker container..."
-	docker-compose exec web black . --line-length=120
-	docker-compose exec web isort . --profile=black --line-length=120
-	docker-compose exec web flake8 .
-	docker-compose exec web mypy . --ignore-missing-imports --disallow-untyped-defs
+	pre-commit run --all-files
